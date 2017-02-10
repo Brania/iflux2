@@ -35,41 +35,39 @@ type Store = {
   unsubscribe: Function;
 };
 
-export default function Relax(
-  Component: ReactClass<{}>
-): ReactClass<{}> {
+export default function Relax(Component: ReactClass<{}>): ReactClass<{}> {
   //获取组件中绑定的上下文storeName的参数
   //默认是store
   const ctxStoreName = Component._ctxStoreName || '_iflux2$store';
   return class RelaxContainer extends React.Component {
-     //当前的状态
-     state: State;
-     //当前组件的挂载状态
-     _isMounted: boolean;
-     //当前的所有的子组件的props
-     _relaxProps: Object;
-     //debug状态
-     _debug: boolean;
-     //当前上下文的store
-     _store: Store;
+    //当前的状态
+    state: State;
+    //当前组件的挂载状态
+    _isMounted: boolean;
+    //当前的所有的子组件的props
+    _relaxProps: Object;
+    //debug状态
+    _debug: boolean;
+    //当前上下文的store
+    _store: Store;
 
-     //声明上下文类型
-     static contextTypes = {
-       [ctxStoreName]: React.PropTypes.object
-     };
+    //声明上下文类型
+    static contextTypes = {
+      [ctxStoreName]: React.PropTypes.object
+    };
 
-     //声明displayName
-     static displayName = `Relax(${getDisplayName(Component)})`;
+    //声明displayName
+    static displayName = `Relax(${getDisplayName(Component)})`;
 
-     constructor(props) {
-       super(props);
-       //当前组件的挂载状态
-       this._isMounted = false;
-       //当前组件的状态
-       this.state = {
-         storeState: fromJS({})
-       };
-     }
+    constructor(props) {
+      super(props);
+      //当前组件的挂载状态
+      this._isMounted = false;
+      //当前组件的状态
+      this.state = {
+        storeState: fromJS({})
+      };
+    }
 
     componentWillMount() {
       //设置当前组件的状态
@@ -124,7 +122,12 @@ export default function Relax(
      * @param nextProps
      * @returns {boolean}
      */
-    shouldComponentUpdate(nextProps:Object) {
+    shouldComponentUpdate(nextProps: Object, nextState: Object) {
+      //如果没有属性和状态的变化，直接返回false
+      if (nextProps == this.props && nextState == this.state) {
+        return false;
+      }
+
       //will drop
       if (process.env.NODE_ENV != 'production') {
         if (this._store._debug) {
@@ -200,39 +203,34 @@ export default function Relax(
       const store = this._store;
       const defaultProps = Component.defaultProps || {};
 
-      for (let propName in defaultProps) {
-        if (defaultProps.hasOwnProperty(propName)) {
+      for (let propName of  Object.keys(defaultProps)) {
+        //判断defaultProps的值是不是query的语法
+        const propValue = defaultProps[propName];
+        if (propValue instanceof QueryLang) {
+          props[propName] = store.bigQuery(propValue);
+          continue;
+        }
 
-          //判断defaultProps的值是不是query的语法
-          const propValue = defaultProps[propName];
-          if (propValue instanceof QueryLang) {
-            props[propName] = store.bigQuery(propValue);
-            continue;
-          }
+        //隔离出来DQL
+        if (propValue instanceof DynamicQueryLang) {
+          dql[propName] = propValue;
+        }
 
-          //隔离出来DQL
-          if (propValue instanceof DynamicQueryLang) {
-            dql[propName] = propValue;
-          }
+        props[propName] = defaultProps[propName];
 
-          props[propName] = defaultProps[propName];
-
-          //如果默认属性中匹配上
-          if (RelaxContainer._isNotUndefinedAndNull(reactProps[propName])) {
-            props[propName] = reactProps[propName];
-          } else if (RelaxContainer._isNotUndefinedAndNull(store[propName])) {
-            props[propName] = store[propName];
-          } else if (RelaxContainer._isNotUndefinedAndNull(store.state().get(propName))) {
-            props[propName] = store.state().get(propName);
-          }
+        //如果默认属性中匹配上
+        if (RelaxContainer._isValid(reactProps[propName])) {
+          props[propName] = reactProps[propName];
+        } else if (RelaxContainer._isValid(store[propName])) {
+          props[propName] = store[propName];
+        } else if (RelaxContainer._isValid(store.state().get(propName))) {
+          props[propName] = store.state().get(propName);
         }
       }
 
       //开始计算DQL
-      for (let propName in dql) {
-        if (dql.hasOwnProperty(propName)) {
-          props[propName] = store.bigQuery(dql[propName].context(props).ql());
-        }
+      for (const propName of Object.keys(dql)) {
+        props[propName] = store.bigQuery(dql[propName].context(props).ql());
       }
 
       return props;
@@ -242,19 +240,19 @@ export default function Relax(
      * 判断当前的值是不是undefined或者null
      * @param  {any} param
      */
-    static _isNotUndefinedAndNull(param: any) {
+    static _isValid(param: any) {
       return typeof(param) != 'undefined' && null != param;
     }
 
     /**
      * 订阅store的变化
      */
-   _subscribeStoreChange = (state: IState) => {
-     if (this._isMounted) {
-       //re-render
-       this.setState({storeState: state});
-     }
-   };
+    _subscribeStoreChange = (state: IState) => {
+      if (this._isMounted) {
+        //re-render
+        this.setState({storeState: state});
+      }
+    };
   };
 
   /**
