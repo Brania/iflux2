@@ -15,7 +15,7 @@ export default class AppStore extends Store {
       window.store = this
     }
   }
-
+  // 聚合Actor
   bindActor() {
     return [
       new ListActor

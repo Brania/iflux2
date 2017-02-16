@@ -35,7 +35,8 @@ class User extends Component {
 Relax是iflux2中非常重要的容器组件，类似Spring的依赖注入一样，会根据子组件的defaultProps中声明的数据，通过智能计算属性的值，然后注入到子组件的内部。
 
 计算的属性的顺序：
-1. 属性的值是不是query-lang,如果是通过store的bigQuery计算
+
+1. 属性的值是不是query-lang,如果是则通过store的bigQuery计算
 2. 是不是父组件传递的props
 3. 是不是store的方法
 4. 是不是store中的状态值

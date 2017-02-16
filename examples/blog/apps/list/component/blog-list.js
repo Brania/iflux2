@@ -1,10 +1,10 @@
 //@flow
-import React, {Component} from 'react'
+import React, { Component } from 'react'
 import { Relax } from 'iflux2'
 import { fromJS } from 'immutable'
 import { Link } from 'react-router'
 
-
+// @Relax智能计算子组件defaultProps中声明的属性值
 @Relax
 export default class BlogList extends Component {
   static defaultProps = {

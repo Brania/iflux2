@@ -75,6 +75,7 @@ const userQL = QL('userQL', [
 ## why?
 
 为什么我们需要一个QL
+
 1. 如果我们把我们的state看成source data，我们需要有派生数据的能力，因为UI展示的数据，可能需要根据我们的源数据进行组合
 
 2. 我们需要我们的UI的数据具有reactive的能力，当source data变化的时候，@Relax会去重新计算我们的QL，达到数据Reactive的能力

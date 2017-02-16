@@ -7,7 +7,7 @@
 
 
 ### Why React ?
-[React.js](http://facebook.github.io/react/)犹如Facebook的文化基因所强调的一样move fast and break things, 在快速前进中打破了很多我们对于web开发的固有认识。
+[React.js](http://facebook.github.io/react/)犹如Facebook的文化基因所强调的一样**move fast and break things**, 在快速前进中打破了很多我们对于web开发的固有认识。
 更厉害的是React把这种创新平移到移动开发(React native)实现了Learn once, Write everywhere.
 
 
